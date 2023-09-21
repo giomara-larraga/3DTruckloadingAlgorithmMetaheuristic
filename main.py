@@ -239,3 +239,10 @@ load_box(container, 0, 0, 10
 container.display_matplotlib()
 #wait for user input to continue
 input("Press Enter to continue...")
+
+# Load a box into the container at a specific position with a specific width and height
+load_box(container, 3, 3, 14
+         , 5, 17)
+container.display_matplotlib()
+#wait for user input to continue
+input("Press Enter to continue...")
