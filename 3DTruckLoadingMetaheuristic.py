@@ -336,7 +336,8 @@ def evaluate_space_feasibility(container, row, column, depth, width, height):
             return feasibility, score,  error_message
         # compute the score: loading meters to be held small, prefer the middle of the container.
         #score = width_of_column_after + 0.001 * abs((width_of_row_after - width_of_row)/2 - container.width)
-        score = width_of_column_after + 0.00001 * abs((width_of_row_after - width_of_row)/2 - container.width/2)
+        score = width_of_column_after
+                 #+ 0.00001 * abs((width_of_row_after - width_of_row)/2 - container.width/2))
         return feasibility, score, error_message
 
 # write a test script that evaluates if a box shaped item can be placed at the integer corner (row, column) as its lower corner
@@ -665,25 +666,6 @@ class Package:
         self.z = 0  # Initialize z position
 
 
-# Genetic Algorithm Parameters
-POPULATION_SIZE = 50
-NUM_GENERATIONS = 100
-MUTATION_RATE = 0.2
-
-# Problem-specific parameters
-CONTAINER_WIDTH = 10
-CONTAINER_HEIGHT = 10
-CONTAINER_DEPTH = 10
-
-# Create a list of packages (for example)
-packages = [
-    Package(2, 3, 1, False),
-    Package(4, 2, 1, True),
-    Package(3, 3, 1, False),
-    Package(1, 4, 1, False),
-    Package(5, 2, 1, True),
-    # Add more packages as needed
-]
 
 
 # Initialize population with random permutations
@@ -800,7 +782,12 @@ def genetic_algorithm(packages, population_size, num_generations, mutation_rate,
     population = initialize_population(population_size, num_packages)
 
     for generation in range(num_generations):
-        fitness_scores = calculate_fitness(population, packages)
+        fitness_scores = []
+        if (loading_method == '2D'):
+            fitness_scores = calculate_fitness(population, packages, cheight, cdepth, cwidth)
+        elif (loading_method == '3D'):
+            # set dimensions  of the container
+            fitness_scores = calculate_fitness_3DContainerLoader(population, packages, cheight, cdepth, cwidth)
 
         # Select parents for reproduction using roulette wheel selection
         probabilities = fitness_scores / np.sum(fitness_scores)
@@ -841,6 +828,28 @@ def genetic_algorithm(packages, population_size, num_generations, mutation_rate,
     best_fitness = fitness_scores[best_solution_idx]
 
     return best_chromosome, best_fitness
+
+
+# Define data and parameters
+# Genetic Algorithm Parameters
+POPULATION_SIZE = 50
+NUM_GENERATIONS = 100
+MUTATION_RATE = 0.2
+
+# Problem-specific parameters
+CONTAINER_WIDTH = 10
+CONTAINER_HEIGHT = 10
+CONTAINER_DEPTH = 10
+
+# Create a list of packages (for example)
+#packages = [
+#    Package(2, 3, 1, False),
+#    Package(4, 2, 1, True),
+#    Package(3, 3, 1, False),
+#    Package(1, 4, 1, False),
+#    Package(5, 2, 1, True),
+#    # Add more packages as needed
+#]
 
 
 
@@ -903,6 +912,8 @@ for i in range(len(container.boxes)):
 # assign same colors to same size boxes
 boxes_json = print_json_for_list_of_boxes(container.boxes_index, color_package, container.boxes, container.boxes_lower_corner, cdepth=13620+1, cwidth=2480+1, cheight=2670+1)
 print(boxes_json)
+
+
 
 #test_load_box()
 #test_evaluate_space_feasibility()
