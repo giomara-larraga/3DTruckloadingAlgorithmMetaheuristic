@@ -1,34 +1,34 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors  # Import mcolors module
-# The container has a length, a width and a height. The container is partially loaded with cargo (box shaped items).
+# The container has a depth, a width and a height. The container is partially loaded with cargo (box shaped items).
 # The cargo is loaded in the container in a matrix of cells. Each cell has a height.
 
 # In debug mode, the process of loading is documented with print statements on the console
 debug_load=False
 class PartiallyLoadedContainer:
-    def __init__(self, columns, rows, length_coordinates, width_coordinates, container_length=70, container_width=100, container_height=2600,):
+    def __init__(self, columns, rows, depth_coordinates, width_coordinates, container_depth=70, container_width=100, container_height=2600,):
         # Initialize the container's dimensions
         self.height = container_height
-        self.length = length_coordinates[-1]
+        self.depth = depth_coordinates[-1]
         self.width = width_coordinates[-1]
         # Initialize the matrix for heights
         self.height_matrix = [[0 for _ in range(columns)] for _ in range(rows)]
 
-        # Initialize arrays for width and length coordinates
+        # Initialize arrays for width and depth coordinates
         self.width_coordinates = [0] * rows
-        self.length_coordinates = [0] * columns
-        # Check the length of the width coordinates array
+        self.depth_coordinates = [0] * columns
+        # Check the depth of the width coordinates array
         if len(width_coordinates) != rows:
             raise ValueError("Invalid number of width coordinates.")
-        # Check the length of the length coordinates array
-        if len(length_coordinates) != columns:
-            raise ValueError("Invalid number of length coordinates.")
-        # Set the width and length coordinates
+        # Check the depth of the depth coordinates array
+        if len(depth_coordinates) != columns:
+            raise ValueError("Invalid number of depth coordinates.")
+        # Set the width and depth coordinates
         for i in range(rows):
             self.width_coordinates[i] = width_coordinates[i]
         for j in range(columns):
-            self.length_coordinates[j] = length_coordinates[j]
+            self.depth_coordinates[j] = depth_coordinates[j]
 
         # Add a list of all boxes that are  loaded in the container, their index and their lower and upper corner
         self.boxes = []
@@ -51,12 +51,12 @@ class PartiallyLoadedContainer:
             raise ValueError("Invalid position for adding a width coordinate.")
 
         # Insert a new row in the height matrix with default heights
-        self.height_matrix.insert(position, [0] * len(self.length_coordinates))
+        self.height_matrix.insert(position, [0] * len(self.depth_coordinates))
 
         # Add the new row height to the width coordinates array
         self.width_coordinates.insert(position, real_width)
         # replicate all height values in the new row
-        for i in range(len(self.length_coordinates)):
+        for i in range(len(self.depth_coordinates)):
             self.height_matrix[position][i] = self.height_matrix[position-1][i]
 
 
@@ -71,43 +71,43 @@ class PartiallyLoadedContainer:
         # Delete the width coordinate from the array
         del self.width_coordinates[position]
 
-    def add_length_coordinate(self, position, width_of_column=0.0):
-        """Add a new length coordinate level (column) to the container."""
-        if position < 0 or position > len(self.length_coordinates):
-            raise ValueError("Invalid position for adding a length coordinate.")
+    def add_depth_coordinate(self, position, width_of_column=0.0):
+        """Add a new depth coordinate level (column) to the container."""
+        if position < 0 or position > len(self.depth_coordinates):
+            raise ValueError("Invalid position for adding a depth coordinate.")
 
         # Insert a new column in the height matrix with default heights
         for row in self.height_matrix:
             row.insert(position, 0)
 
-        # Add the new column width to the length coordinates array
-        self.length_coordinates.insert(position, width_of_column)
+        # Add the new column width to the depth coordinates array
+        self.depth_coordinates.insert(position, width_of_column)
         # replicate all height values in the new column
         for i in range(len(self.width_coordinates)):
             self.height_matrix[i][position] = self.height_matrix[i][position-1]
 
-    def delete_length_coordinate(self, position):
-        """Delete a length coordinate level (column) from the container."""
-        if position < 0 or position >= len(self.length_coordinates):
-            raise ValueError("Invalid position for deleting a length coordinate.")
+    def delete_depth_coordinate(self, position):
+        """Delete a depth coordinate level (column) from the container."""
+        if position < 0 or position >= len(self.depth_coordinates):
+            raise ValueError("Invalid position for deleting a depth coordinate.")
 
         # Delete the corresponding column from the height matrix
         for row in self.height_matrix:
             del row[position]
 
-        # Delete the length coordinate from the array
-        del self.length_coordinates[position]
+        # Delete the depth coordinate from the array
+        del self.depth_coordinates[position]
 
     def display_container(self):
         """Display the container's current state, including heights."""
         for i in range(len(self.width_coordinates)):
-            for j in range(len(self.length_coordinates)):
-                print(f"({self.width_coordinates[i]}, {self.length_coordinates[j]}): {self.height_matrix[i][j]}")
+            for j in range(len(self.depth_coordinates)):
+                print(f"({self.width_coordinates[i]}, {self.depth_coordinates[j]}): {self.height_matrix[i][j]}")
 
     def display_matplotlib(self):
         """Display the container graphically using Matplotlib with grayscale heights and a legend."""
         rows = len(self.width_coordinates)
-        columns = len(self.length_coordinates)
+        columns = len(self.depth_coordinates)
 
         # Create a figure and axis for the plot
         fig, ax = plt.subplots()
@@ -125,13 +125,13 @@ class PartiallyLoadedContainer:
                     color = cmap(height / max_color)  # Scale heights to the [0, 1] range for grayscale
                     ax.add_patch(plt.Rectangle((j, -i - 1), 1, 1, facecolor=color, edgecolor='black'))
 
-        # Set axis: choose the limits and tic label  according to the length and width coordinate values
+        # Set axis: choose the limits and tic label  according to the depth and width coordinate values
         ax.set_xlim(0, columns)
         ax.set_ylim(-rows, 0)
         ax.set_aspect('equal', adjustable='box')
 
         ax.set_xticks(range(columns))
-        ax.set_xticklabels(self.length_coordinates)
+        ax.set_xticklabels(self.depth_coordinates)
         ax.set_yticks(range(-rows, 0))
         # Flip array width_coordinates to display the width coordinates in the right orderand remove first element
         invertedCoordinates=self.width_coordinates[::-1]
@@ -143,7 +143,7 @@ class PartiallyLoadedContainer:
         ax.tick_params(axis='y', which='major', pad=15)
 
         ax.set_aspect('equal', adjustable='box')
-        ax.set_xlabel('Length Coordinate')
+        ax.set_xlabel('depth Coordinate')
         ax.set_ylabel('width Coordinate')
 
         # Create a legend for height levels
@@ -175,20 +175,20 @@ class PartiallyLoadedContainer:
         plt.show()
 
 # Define a function that loads a single box into the container and updates the container's state and coordinates
-def load_box(container, row, column, length, width, height):
-    """Load a box into the container at a specific position with a specific length and height."""
+def load_box(container, row, column, depth, width, height):
+    """Load a box into the container at a specific position with a specific depth and height."""
     # Check the real coordinates of row and column, using the container's coordinates
     width_of_row = container.width_coordinates[row]
-    width_of_column = container.length_coordinates[column]
+    width_of_column = container.depth_coordinates[column]
     # compute the coordinates after the box is loaded
     width_of_row_after = width_of_row + width
-    width_of_column_after = width_of_column + length
+    width_of_column_after = width_of_column + depth
     # compute the real height at column and row
     real_height = container.get_height(row, column)
     # compute the real height after the box is loaded
     real_height_after = real_height + height
     # check if the box fits in the container
-    if width_of_row_after > container.width_coordinates[-1] or width_of_column_after > container.length_coordinates[-1]:
+    if width_of_row_after > container.width_coordinates[-1] or width_of_column_after > container.depth_coordinates[-1]:
         # do not load the box if it does not fit
         print('box does not fit')
         return False
@@ -196,9 +196,9 @@ def load_box(container, row, column, length, width, height):
         # add box to the container and update coordinates and heights
         # First find the column and row where the upper real coordinate corner of the box is located
         # Find the column where the upper real coordinate corner of the box is located
-        for i in range(len(container.length_coordinates)):
-            if ((width_of_column_after >= container.length_coordinates[i])
-                    and (width_of_column_after <= container.length_coordinates[i+1])):
+        for i in range(len(container.depth_coordinates)):
+            if ((width_of_column_after >= container.depth_coordinates[i])
+                    and (width_of_column_after <= container.depth_coordinates[i+1])):
                 new_column = i
                 break
         # Find in the same way the row where the upper real coordinate corner of the box is located
@@ -211,8 +211,8 @@ def load_box(container, row, column, length, width, height):
         if width_of_row_after < container.width_coordinates[new_row+1]:
             container.add_width_coordinate(new_row + 1, width_of_row_after)
         # Add a coordinate level (new_column) if necessary
-        if width_of_column_after < container.length_coordinates[new_column+1]:
-            container.add_length_coordinate(new_column+1, width_of_column_after)
+        if width_of_column_after < container.depth_coordinates[new_column+1]:
+            container.add_depth_coordinate(new_column+1, width_of_column_after)
     # Update heights from in the box from row, colum to new_row and new_column
     for i in range(row, new_row+1):
         for j in range(column, new_column+1):
@@ -224,7 +224,7 @@ def load_box(container, row, column, length, width, height):
     # Add the index of the box to the list of boxes
     container.boxes_index.append(len(container.boxes_index))
     # Add the box to the list of boxes
-    container.boxes.append((length, width, height))
+    container.boxes.append((depth, width, height))
     return True
 
 # make the below part a test function for load_box
@@ -241,27 +241,27 @@ def test_load_box():
     #wait for user input to continue
     input("Press Enter to continue...")
 
-    # Load a box into the container at a specific position with a specific length and height
+    # Load a box into the container at a specific position with a specific depth and height
     load_box(container, 1, 1, 5, 4, 10)
     container.display_matplotlib()
     #wait for user input to continue
     input("Press Enter to continue...")
 
-    # Load a box into the container at a specific position with a specific length and height
+    # Load a box into the container at a specific position with a specific depth and height
     load_box(container, 0, 1, 6
              , 5, 10)
     container.display_matplotlib()
     #wait for user input to continue
     input("Press Enter to continue...")
 
-    # Load a box into the container at a specific position with a specific length and height
+    # Load a box into the container at a specific position with a specific depth and height
     load_box(container, 0, 0, 10
              , 20, 70)
     container.display_matplotlib()
     #wait for user input to continue
     input("Press Enter to continue...")
 
-    # Load a box into the container at a specific position with a specific length and height
+    # Load a box into the container at a specific position with a specific depth and height
     load_box(container, 3, 3, 14
          , 5, 17)
     container.display_matplotlib()
@@ -269,10 +269,10 @@ def test_load_box():
     input("Press Enter to continue...")
     # end of the test function for load_box
 
-def evaluate_space_feasibility(container, row, column, length, width, height):
+def evaluate_space_feasibility(container, row, column, depth, width, height):
 # This function evaluates if a box shaped item can be placed at the integer corner (row, column) as its lower corner
 # and it is (1) well supported by the container floor or previously loaded boxes (even height level).
-# (2) it does not exceed the container height and (3) it does not exceed the container length and width.
+# (2) it does not exceed the container height and (3) it does not exceed the container depth and width.
 # The function returns True if the box can be placed at the corner (row, column) and False otherwise.
 # The score reflects for a feasible place how well the box fits on previously loaded boxes.
     score = 0.0;
@@ -280,16 +280,16 @@ def evaluate_space_feasibility(container, row, column, length, width, height):
     error_message = 'No Problems Encountered'
     # Check the real coordinates of row and column, using the container's coordinates
     width_of_row = container.width_coordinates[row]
-    width_of_column = container.length_coordinates[column]
+    width_of_column = container.depth_coordinates[column]
     # compute the coordinates after the box is loaded
     width_of_row_after = width_of_row + width
-    width_of_column_after = width_of_column + length
+    width_of_column_after = width_of_column + depth
     # compute the real height at column and row
     real_height = container.get_height(row, column)
     # compute the real height after the box is loaded
     real_height_after = real_height + height
     # check if the box fits in the container
-    if width_of_row_after > container.width_coordinates[-1] or width_of_column_after > container.length_coordinates[-1]:
+    if width_of_row_after > container.width_coordinates[-1] or width_of_column_after > container.depth_coordinates[-1]:
         feasibility = False
         error_message = 'box does not fit'
         return feasibility, score, error_message
@@ -303,11 +303,11 @@ def evaluate_space_feasibility(container, row, column, length, width, height):
                     and (width_of_row_after <= container.width_coordinates[i+1])):
                 row_after = i
                 break
-        # compute the length in the integer grid coordinates, using the length coordinates and the length of the corner and the length of the corner after the box is loaded
+        # compute the depth in the integer grid coordinates, using the depth coordinates and the depth of the corner and the depth of the corner after the box is loaded
         column_after = 0
-        for i in range(len(container.length_coordinates)):
-            if ((width_of_column_after > container.length_coordinates[i])
-                    and (width_of_column_after <= container.length_coordinates[i+1])):
+        for i in range(len(container.depth_coordinates)):
+            if ((width_of_column_after > container.depth_coordinates[i])
+                    and (width_of_column_after <= container.depth_coordinates[i+1])):
                 column_after = i
                 break
         # Go through all cells right below the box to be loaded and check if their height is the same
@@ -322,10 +322,10 @@ def evaluate_space_feasibility(container, row, column, length, width, height):
             feasibility = False
             error_message = 'box exceeds the container height'
             return feasibility, score, error_message
-        # check if the box exceeds the container length
-        if width_of_column_after > container.length_coordinates[-1]:
+        # check if the box exceeds the container depth
+        if width_of_column_after > container.depth_coordinates[-1]:
             feasibility = False
-            error_message = 'box exceeds the container length'
+            error_message = 'box exceeds the container depth'
             return feasibility, score, error_message
         # check if the box exceeds the container width
         if width_of_row_after > container.width_coordinates[-1]:
@@ -339,7 +339,7 @@ def evaluate_space_feasibility(container, row, column, length, width, height):
 
 # write a test script that evaluates if a box shaped item can be placed at the integer corner (row, column) as its lower corner
 # and it is (1) well supported by the container floor or previously loaded boxes (even height level).
-# (2) it does not exceed the container height and (3) it does not exceed the container length and width.
+# (2) it does not exceed the container height and (3) it does not exceed the container depth and width.
 # The function returns True if the box can be placed at the corner (row, column) and False otherwise.
 # The score reflects for a feasible place how well the box fits on previously loaded boxes. A blend of loading meters, and axle balance
 # Example usage:
@@ -362,31 +362,31 @@ def test_evaluate_space_feasibility():
     input("Press Enter to continue...")
 
     # Print
-    column, row, length, width, height = (2, 2, 13, 19, 10)
+    column, row, depth, width, height = (2, 2, 13, 19, 10)
     if (debug_load==True):
-        print('Attempting to load_box(container, column:', column,' row:', row, ' length', length,' width:', width,' height:', height)
-    feasibility, score, error_message = evaluate_space_feasibility(container, row,column, length, width, height)
+        print('Attempting to load_box(container, column:', column,' row:', row, ' depth', depth,' width:', width,' height:', height)
+    feasibility, score, error_message = evaluate_space_feasibility(container, row,column, depth, width, height)
     if (debug_load==True):
         print('Feasibility: ', feasibility, 'Score: ', score, 'Error message: ', error_message)
     load_box(container, row, column,
-         length, width, height)
+         depth, width, height)
     container.display_matplotlib()
     #wait for user input to continue
     input("Press Enter to continue...")
 
 
-# Find the best position for a box shaped item with a specific length and height.
+# Find the best position for a box shaped item with a specific depth and height.
 # The function returns the best position (row, column) and the score.
 # The score reflects for a feasible place how well the box fits on previously loaded boxes. A blend of loading meters, and axle balance
-def find_best_position(container, length, width, height):
+def find_best_position(container, depth, width, height):
     best_score = 10000000000
     best_row = 0
     best_column = 0
     # Go through all possible positions for the lower left corner of the box
     for i in range(len(container.width_coordinates)):
-        for j in range(len(container.length_coordinates)):
+        for j in range(len(container.depth_coordinates)):
             # Evaluate the feasibility of the position
-            feasibility, score, error_message = evaluate_space_feasibility(container, i, j, length, width, height)
+            feasibility, score, error_message = evaluate_space_feasibility(container, i, j, depth, width, height)
             # If the position is feasible and the score is better than the best score so far, update the best score and position
             if feasibility and score <= best_score:
                 best_score = score
@@ -394,7 +394,7 @@ def find_best_position(container, length, width, height):
                 best_column = j # Update the best position
     return best_row, best_column, best_score
 
-# write a test script that finds the best position for a box shaped item with a specific length and height.
+# write a test script that finds the best position for a box shaped item with a specific depth and height.
 # The function returns the best position (row, column) and the score.
 # The score reflects for a feasible place how well the box fits on previously loaded boxes. A blend of loading meters, and axle balance
 # Example usage:
@@ -414,67 +414,67 @@ def test_find_best_position():
     container.display_matplotlib()
     #wait for user input to continue
     input("Press Enter to continue...")
-    # Find the best position for a box shaped item with a specific length and height.
+    # Find the best position for a box shaped item with a specific depth and height.
 
-    length, width, height = (13, 19, 10)
-    print('Attempting to find_best_position(container, length:', length,' width:', width,' height:', height)
-    best_row, best_column, best_score = find_best_position(container, length, width, height)
+    depth, width, height = (13, 19, 10)
+    print('Attempting to find_best_position(container, depth:', depth,' width:', width,' height:', height)
+    best_row, best_column, best_score = find_best_position(container, depth, width, height)
     print('Best position: ', best_row, best_column, 'Best score: ', best_score)
-    load_box(container, best_row, best_column, length, width, height)
+    load_box(container, best_row, best_column, depth, width, height)
     container.display_matplotlib()
     #wait for user input to continue
     input("Press Enter to continue...")
 
-    length, width, height = (13, 19, 70)
-    print('Attempting to find_best_position(container, length:', length,' width:', width,' height:', height)
-    best_row, best_column, best_score = find_best_position(container, length, width, height)
+    depth, width, height = (13, 19, 70)
+    print('Attempting to find_best_position(container, depth:', depth,' width:', width,' height:', height)
+    best_row, best_column, best_score = find_best_position(container, depth, width, height)
     print('Best position: ', best_row, best_column, 'Best score: ', best_score)
-    load_box(container, best_row, best_column, length, width, height)
+    load_box(container, best_row, best_column, depth, width, height)
     container.display_matplotlib()
     #wait for user input to continue
     input("Press Enter to continue...")
 
-    length, width, height = (13, 19, 60)
-    print('Attempting to find_best_position(container, length:', length,' width:', width,' height:', height)
-    best_row, best_column, best_score = find_best_position(container, length, width, height)
+    depth, width, height = (13, 19, 60)
+    print('Attempting to find_best_position(container, depth:', depth,' width:', width,' height:', height)
+    best_row, best_column, best_score = find_best_position(container, depth, width, height)
     print('Best position: ', best_row, best_column, 'Best score: ', best_score)
-    load_box(container, best_row, best_column, length, width, height)
+    load_box(container, best_row, best_column, depth, width, height)
     container.display_matplotlib()
     #wait for user input to continue
     input("Press Enter to continue...")
 
 
-    length, width, height = (13, 39, 60)
+    depth, width, height = (13, 39, 60)
     if (debug_load==True):
-        print('Attempting to find_best_position(container, length:', length,' width:', width,' height:', height)
-    best_row, best_column, best_score = find_best_position(container, length, width, height)
+        print('Attempting to find_best_position(container, depth:', depth,' width:', width,' height:', height)
+    best_row, best_column, best_score = find_best_position(container, depth, width, height)
     if  (debug_load==True):
         print('Best position: ', best_row, best_column, 'Best score: ', best_score)
-    load_box(container, best_row, best_column, length, width, height)
+    load_box(container, best_row, best_column, depth, width, height)
     container.display_matplotlib()
     #wait for user input to continue
     if (debug_load==True):
         input("Press Enter to continue...")
 
-    length, width, height = (13, 39, 50)
+    depth, width, height = (13, 39, 50)
     if (debug_load==True):
-        print('Attempting to find_best_position(container, length:', length,' width:', width,' height:', height)
-    best_row, best_column, best_score = find_best_position(container, length, width, height)
+        print('Attempting to find_best_position(container, depth:', depth,' width:', width,' height:', height)
+    best_row, best_column, best_score = find_best_position(container, depth, width, height)
     if (debug_load==True):
         print('Best position: ', best_row, best_column, 'Best score: ', best_score)
-    load_box(container, best_row, best_column, length, width, height)
+    load_box(container, best_row, best_column, depth, width, height)
     container.display_matplotlib()
     #wait for user input to continue
     if (debug_load==True):
         input("Press Enter to continue...")
 
-    length, width, height = (10, 10, 65)
+    depth, width, height = (10, 10, 65)
     if  (debug_load==True):
-        print('Attempting to find_best_position(container, length:', length,' width:', width,' height:', height)
-    best_row, best_column, best_score = find_best_position(container, length, width, height)
+        print('Attempting to find_best_position(container, depth:', depth,' width:', width,' height:', height)
+    best_row, best_column, best_score = find_best_position(container, depth, width, height)
     if  (debug_load==True):
        print('Best position: ', best_row, best_column, 'Best score: ', best_score)
-    load_box(container, best_row, best_column, length, width, height)
+    load_box(container, best_row, best_column, depth, width, height)
     container.display_matplotlib()
     #wait for user input to continue
     input("Press Enter to continue...")
@@ -485,25 +485,25 @@ def test_find_best_position():
     for i in range(len(container.boxes)):
         print(container.boxes_index[i], container.boxes_lower_corner[i], container.boxes_upper_corner[i])
 
-# 6 * Pallet. width 660, length 940, height 1203
+# 6 * Pallet. width 660, depth 940, height 1203
 #
-# 5 * Pallet. width 660, length 940, height 1190
+# 5 * Pallet. width 660, depth 940, height 1190
 #
-# 4 * Pallet. width 660, length 940, height 1398
+# 4 * Pallet. width 660, depth 940, height 1398
 #
-# 10 * Pallet. width 660, length 920, height 1248
+# 10 * Pallet. width 660, depth 920, height 1248
 #
-# 4 * Pallet. width 660, length 920, height 1320
+# 4 * Pallet. width 660, depth 920, height 1320
 #
 # Loading parameters: no special rules required
 #
 # Deli 2 (front of trailer)
 #
-# 6 * Pallet, width 740, length 1040, height 1263
+# 6 * Pallet, width 740, depth 1040, height 1263
 #
-# 4 * Pallet, width 740, length 1040, height 1185
+# 4 * Pallet, width 740, depth 1040, height 1185
 #
-# 4 * Pallet, width 900, length 650, height 1338
+# 4 * Pallet, width 900, depth 650, height 1338
 #
 # Loading parameters: no special rules required
 # Function for testing the loading of a container test case above:
@@ -531,7 +531,7 @@ def test_find_best_position():
 #          "depth": 1200
 #        },
 #        "position": { // Item coordinates.
-#        // The front bottom left corner of the container is at (x=length=0,y=width=0,height=0).
+#        // The front bottom left corner of the container is at (x=depth=0,y=width=0,height=0).
 #          "x": 0,
 #          "y": 0,
 #          "z": 0
@@ -575,7 +575,7 @@ def print_json_for_list_of_boxes(boxes_indexes, colors, boxes_sizes, boxes_lower
     print('}'+ '}')
 
 def test_tietoevry1_load_container():
-    # Start with an empty container: Length internal: 13620, width internal: 2480, Height:2670
+    # Start with an empty container: depth internal: 13620, width internal: 2480, Height:2670
     # initialize the container
     container = PartiallyLoadedContainer(2, 2, [0, 13620], [0,2480])
     # set maximal height of the container
@@ -585,10 +585,10 @@ def test_tietoevry1_load_container():
     # wait for user input to continue
     input("Press Enter to continue...")
     # Make a list of boxes to be loaded in the container, first Deli
-    # 6 * Pallet. width 660, length 940, height 1203
-    # 5 * Pallet. width 660, length 940, height 1190
-    # 4 * Pallet. width 660, length 940, height 1398
-    # 10 * Pallet. width 660, length 920, height 1248
+    # 6 * Pallet. width 660, depth 940, height 1203
+    # 5 * Pallet. width 660, depth 940, height 1190
+    # 4 * Pallet. width 660, depth 940, height 1398
+    # 10 * Pallet. width 660, depth 920, height 1248
     deli1_boxes = [(660, 940, 1203), (660, 940, 1203), (660, 940, 1203), (660, 940, 1203), (660, 940, 1203),
                    (660, 940, 1203),
                    (660, 940, 1190), (660, 940, 1190), (660, 940, 1190), (660, 940, 1190), (660, 940, 1190),
@@ -601,34 +601,34 @@ def test_tietoevry1_load_container():
                             'yellow', 'yellow', 'yellow']
     # load the boxes in the container
     for box in deli1_boxes:
-        length, width, height = box
+        depth, width, height = box
         if (debug_load==True):
-            print('Attempting to find_best_position(container, length:', length, ' width:', width, ' height:', height)
-        best_row, best_column, best_score = find_best_position(container, length, width, height)
+            print('Attempting to find_best_position(container, depth:', depth, ' width:', width, ' height:', height)
+        best_row, best_column, best_score = find_best_position(container, depth, width, height)
         if (debug_load==True):
             print('Best position: ', best_row, best_column, 'Best score: ', best_score)
-        load_box(container, best_row, best_column, length, width, height)
+        load_box(container, best_row, best_column, depth, width, height)
         container.display_matplotlib()
         # wait for user input to continue
         if (debug_load == True):
             input("Press Enter to continue...")
     # Make a list of boxes to be loaded in the container, second Deli
-    # 6 * Pallet, width 740, length 1040, height 1263
-    # 4 * Pallet, width 740, length 1040, height 1185
-    # 4 * Pallet, width 900, length 650, height 1338
+    # 6 * Pallet, width 740, depth 1040, height 1263
+    # 4 * Pallet, width 740, depth 1040, height 1185
+    # 4 * Pallet, width 900, depth 650, height 1338
     deli2_boxes = [(740, 1040, 1263), (740, 1040, 1185), (900, 650, 1338)]
     # assign additional different colors to these boxes
     tieto_deli_colors.extend(['orange', 'orange', 'orange', 'orange', 'orange', 'orange', 'purple', 'purple', 'purple'])
 
     # load the boxes in the container
     for box in deli2_boxes:
-        length, width, height = box
+        depth, width, height = box
         if (debug_load==True):
-            print('Attempting to find_best_position(container, length:', length, ' width:', width, ' height:', height)
-        best_row, best_column, best_score = find_best_position(container, length, width, height)
+            print('Attempting to find_best_position(container, depth:', depth, ' width:', width, ' height:', height)
+        best_row, best_column, best_score = find_best_position(container, depth, width, height)
         if (debug_load==True):
             print('Best position: ', best_row, best_column, 'Best score: ', best_score)
-        load_box(container, best_row, best_column, length, width, height)
+        load_box(container, best_row, best_column, depth, width, height)
         container.display_matplotlib()
         # wait for user input to continue
         if (debug_load == True):
