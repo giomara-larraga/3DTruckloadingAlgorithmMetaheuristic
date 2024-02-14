@@ -2,9 +2,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors  # Import mcolors module
 import numpy as np
-import pandas as pd
-from Permutation_GA import genetic_algorithm, Package
-import os
 
 # The container has a depth, a width and a height. The container is partially loaded with cargo (box shaped items).
 # The cargo is loaded in the container in a matrix of cells. Each cell has a height.
@@ -655,6 +652,28 @@ def test_tietoevry1_load_container():
     boxes_json = print_json_for_list_of_boxes(container.boxes_index, tieto_deli_colors, container.boxes, container.boxes_lower_corner)
     print(boxes_json)
 
+# Calling the test functions
+
+# Define a data structure for each package
+class Package:
+    def __init__(self, width, height, depth, non_stackable):
+        self.width = width
+        self.height = height
+        self.depth = depth
+        self.non_stackable = non_stackable
+        self.x = 0  # Initialize x position
+        self.y = 0  # Initialize y position
+        self.z = 0  # Initialize z position
+
+
+
+
+# Initialize population with random permutations
+def initialize_population(population_size, num_packages):
+    return np.array(
+        [np.random.permutation(num_packages) for _ in range(population_size)]
+    )
+
 def calculate_fitness_3DContainerLoader(population, packages, cheight,cdepth, cwidth):
     fitness_scores = []
 
@@ -678,97 +697,227 @@ def calculate_fitness_3DContainerLoader(population, packages, cheight,cdepth, cw
         fitness_scores.append(container.depth-best_score)
     return np.array(fitness_scores)
 
-def read_excel(excel_file_name, sheet_name):
-    # Get the directory of the current script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Construct the absolute path to the Excel file
-    excel_file_path = os.path.join(script_dir, excel_file_name)
 
-    df = pd.read_excel(excel_file_path, sheet_name=sheet_name)
-    return df
 
-def dataframe_to_package_parser(df):
-    l0 = df['Length'].to_numpy()
-    w0 = df['Width'].to_numpy()
-    h0 = df['Height'].to_numpy()
-    quantity = df['Quantity'].to_numpy()
-    wgt0 = df['Weight'].to_numpy()
-    type0 = df['Type']
-    available_colors = ["red", "blue", "green", "yellow", "orange"]
-    packages = []
-    list_of_colors = []
+# Calculate fitness of each chromosome
+def calculate_fitness(population, packages):
+    fitness_scores = []
+    for chromosome in population:
+        # Reset package positions
+        for package in packages:
+            package.x = 0
+            package.y = 0
+            package.z = 0
 
-    for i in range(len(l0)):
-        for j in range(quantity[i]):
-            packages.append(Package(width=w0[i],height=l0[i],depth=h0[i],non_stackable=False))
-            list_of_colors.append(available_colors[i])
+        total_wasted_space = 0
+        non_stackable_stacked_penalty = 0
 
-    return packages, list_of_colors
+        for i, package_idx in enumerate(chromosome):
+            package = packages[package_idx]
 
-def main():
-    # Define data and parameters
-    # Genetic Algorithm Parameters
-    POPULATION_SIZE = 50
-    NUM_GENERATIONS = 100
-    MUTATION_RATE = 0.2
+            # Calculate position in container
+            if i == 0:
+                package.x, package.y, package.z = 0, 0, 0
+            else:
+                package.x = (
+                    packages[chromosome[i - 1]].x + packages[chromosome[i - 1]].width
+                )
+                package.y = packages[chromosome[i - 1]].y
+                package.z = packages[chromosome[i - 1]].z
 
-    #Files to be read
-    excel_file_path = 'Sample_data0.xlsx'
-    sheet_container = 'Container'
-    sheet_items_d1 = 'Ex2-del1'
-    sheet_items_d2 = 'Ex2-del2'
+                # Check if package fits in container
+                if package.x + package.width > CONTAINER_WIDTH:
+                    package.x = 0
+                    package.y += max([packages[chromosome[j]].height for j in range(i)])
 
-    #Read the container parameters from excel file
-    data_container = read_excel(excel_file_path, sheet_container)
-    data_d1 = read_excel(excel_file_path, sheet_items_d1)
-    
-    # Problem-specific parameters
-    CONTAINER_WIDTH = int(data_container["Width"][0])
-    CONTAINER_HEIGHT = int(data_container["Height"][0])
-    CONTAINER_DEPTH = int(data_container["Length"][0])
+                if package.y + package.height > CONTAINER_HEIGHT:
+                    package.y = 0
+                    package.z += max([packages[chromosome[j]].depth for j in range(i)])
 
-    packages, list_of_colors = dataframe_to_package_parser(data_d1)
+                if package.z + package.depth > CONTAINER_DEPTH:
+                    total_wasted_space += 1  # Penalize for not fitting in container
 
-    # Run the genetic algorithm
-    best_chromosome, best_fitness = genetic_algorithm(
-        packages, POPULATION_SIZE, NUM_GENERATIONS, MUTATION_RATE, '3D', fitness_function_3d=calculate_fitness_3DContainerLoader
+                # Check if non-stackable item is stacked
+                if package.non_stackable and any(
+                    packages[j].z + packages[j].depth > package.z for j in range(i)
+                ):
+                    non_stackable_stacked_penalty += 1
+
+        # Apply penalty for non-stackable items being stacked
+        fitness_scores.append(
+            1 / (1 + total_wasted_space + non_stackable_stacked_penalty)
+        )
+    print(fitness_scores)
+    return np.array(fitness_scores)
+
+
+# Perform single-point crossover
+def crossover(parent1, parent2):
+    crossover_point = np.random.randint(len(parent1))
+    child1 = np.hstack(
+        (
+            parent1[:crossover_point],
+            [i for i in parent2 if i not in parent1[:crossover_point]],
+        )
     )
-
-    # Print the best loading order
-    print("Best Loading Order:", best_chromosome, "Fitness:", best_fitness)
-
-    items_to_be_loaded = []
-
-    color_package = []
-    for i, package_idx in enumerate(best_chromosome):
-        package = packages[package_idx]
-        color_package.append(list_of_colors[package_idx])
-        items_to_be_loaded.append((package.width, package.height, package.depth))
-
-    # initialize the container
-    container = PartiallyLoadedContainer(2, 2, [0, CONTAINER_DEPTH], [0,CONTAINER_WIDTH])
-    container.height = CONTAINER_HEIGHT
-    # load the boxes in the container
-    best_score = 10000000000
-    for box in items_to_be_loaded:
-        depth, width, height = box
-        best_row, best_column, best_score = find_best_position(container, depth, width, height)
-        load_box(container, best_row, best_column, depth, width, height)
-    # Display the container using Matplotlib with grayscale heights and a legend
-    #container.display_matplotlib()
-
-    # output the lower and upper corners and the index of the boxes loaded in the container
-    print('Boxes loaded in the container:')
-    print('Index, Lower Corner, Upper Corner')
-    for i in range(len(container.boxes)):
-        print(container.boxes_index[i], container.boxes_lower_corner[i], container.boxes_upper_corner[i])
-        print(color_package)
-    # make a list of boxes in json format
-    # assign same colors to same size boxes
-    boxes_json = print_json_for_list_of_boxes(container.boxes_index, color_package, container.boxes, container.boxes_lower_corner, cdepth=13620+1, cwidth=2480+1, cheight=2670+1)
-    print(boxes_json)
+    child2 = np.hstack(
+        (
+            parent2[:crossover_point],
+            [i for i in parent1 if i not in parent2[:crossover_point]],
+        )
+    )
+    return child1, child2
 
 
-if __name__ == "__main__":
-    main()
+# Perform mutation (swap two random elements)
+def mutate(chromosome):
+    idx1, idx2 = np.random.choice(len(chromosome), size=2, replace=False)
+    chromosome[idx1], chromosome[idx2] = chromosome[idx2], chromosome[idx1]
+    return chromosome
+
+# Genetic Algorithm
+def genetic_algorithm(packages, population_size, num_generations, mutation_rate, loading_method,
+                      cheight = 2670,cdepth = 13620, cwidth = 2480):
+    num_packages = len(packages)
+    population = initialize_population(population_size, num_packages)
+
+    for generation in range(num_generations):
+        fitness_scores = []
+        if (loading_method == '2D'):
+            fitness_scores = calculate_fitness(population, packages, cheight, cdepth, cwidth)
+        elif (loading_method == '3D'):
+            # set dimensions  of the container
+            fitness_scores = calculate_fitness_3DContainerLoader(population, packages, cheight, cdepth, cwidth)
+
+        # Select parents for reproduction using roulette wheel selection
+        probabilities = fitness_scores / np.sum(fitness_scores)
+        parent_indices = np.random.choice(
+            range(population_size), size=population_size, p=probabilities
+        )
+        parents = population[parent_indices]
+        # Create new generation
+        new_population = []
+
+        for i in range(0, population_size, 2):
+            parent1, parent2 = parents[i], parents[i + 1]
+
+            # Perform crossover
+            child1, child2 = crossover(parent1, parent2)
+
+            # Perform mutation
+            if np.random.rand() < mutation_rate:
+                child1 = mutate(child1)
+            if np.random.rand() < mutation_rate:
+                child2 = mutate(child2)
+
+            new_population.extend([child1, child2])
+
+        population = np.array(new_population)
+
+    # Find the best solution from the final generation
+    fitness_scores = []
+    if (loading_method == '2D'):
+        fitness_scores = calculate_fitness(population, packages, cheight, cdepth, cwidth)
+    elif (loading_method == '3D'):
+        # set dimensions  of the container
+        fitness_scores = calculate_fitness_3DContainerLoader(population, packages, cheight, cdepth, cwidth)
+    best_solution_idx = np.argmax(fitness_scores)
+    best_chromosome = population[best_solution_idx]
+
+
+    best_fitness = fitness_scores[best_solution_idx]
+
+    return best_chromosome, best_fitness
+
+
+# Define data and parameters
+# Genetic Algorithm Parameters
+POPULATION_SIZE = 50
+NUM_GENERATIONS = 100
+MUTATION_RATE = 0.2
+
+# Problem-specific parameters
+CONTAINER_WIDTH = 10
+CONTAINER_HEIGHT = 10
+CONTAINER_DEPTH = 10
+
+# Create a list of packages (for example)
+#packages = [
+#    Package(2, 3, 1, False),
+#    Package(4, 2, 1, True),
+#    Package(3, 3, 1, False),
+#    Package(1, 4, 1, False),
+#    Package(5, 2, 1, True),
+#    # Add more packages as needed
+#]
+
+
+
+deli1_boxes = [(660, 940, 1203), (660, 940, 1203), (660, 940, 1203), (660, 940, 1203), (660, 940, 1203),
+                       (660, 940, 1203),
+                       (660, 940, 1190), (660, 940, 1190), (660, 940, 1190), (660, 940, 1190), (660, 940, 1190),
+                       (660, 940, 1398), (660, 940, 1398), (660, 940, 1398), (660, 940, 1398),
+                       (660, 920, 1248), (660, 920, 1248), (660, 920, 1248), (660, 920, 1248), (660, 920, 1248),
+                       (660, 920, 1248), (660, 920, 1248), (660, 920, 1248), (660, 920, 1248), (660, 920, 1248)]
+# make packages from the list of deli1_boxes. LEN, WID, HEI, NON_STACKABLE
+packages = []
+for box in deli1_boxes:
+    depth, width, height = box
+    packages.append(Package(depth, width, height, False))
+
+
+# Run the genetic algorithm
+best_chromosome, best_fitness = genetic_algorithm(
+    packages, POPULATION_SIZE, NUM_GENERATIONS, MUTATION_RATE, '3D'
+)
+
+
+
+
+# Print the best loading order
+print("Best Loading Order:", best_chromosome, "Fitness:", best_fitness)
+
+
+# translate the best chromosome into a list of items to be loaded in the container
+tieto_deli_colors = ['red', 'red', 'red', 'red', 'red', 'red', 'blue', 'blue', 'blue', 'blue', 'blue', 'green',
+                            'green', 'green', 'green', 'yellow', 'yellow', 'yellow', 'yellow', 'yellow', 'yellow',
+                            'yellow', 'yellow', 'yellow','orange','orange']
+items_to_be_loaded = []
+
+color_package = []
+for i, package_idx in enumerate(best_chromosome):
+    package = packages[package_idx]
+    color_package.append(tieto_deli_colors[package_idx])
+    items_to_be_loaded.append((package.width, package.height, package.depth))
+
+print(items_to_be_loaded)
+# initialize the container
+container = PartiallyLoadedContainer(2, 2, [0, 13620], [0,2480])
+container.height = 2670
+# load the boxes in the container
+best_score = 10000000000
+for box in items_to_be_loaded:
+    depth, width, height = box
+    best_row, best_column, best_score = find_best_position(container, depth, width, height)
+    load_box(container, best_row, best_column, depth, width, height)
+# Display the container using Matplotlib with grayscale heights and a legend
+container.display_matplotlib()
+
+# output the lower and upper corners and the index of the boxes loaded in the container
+print('Boxes loaded in the container:')
+print('Index, Lower Corner, Upper Corner')
+for i in range(len(container.boxes)):
+    print(container.boxes_index[i], container.boxes_lower_corner[i], container.boxes_upper_corner[i])
+    print(color_package)
+# make a list of boxes in json format
+# assign same colors to same size boxes
+boxes_json = print_json_for_list_of_boxes(container.boxes_index, color_package, container.boxes, container.boxes_lower_corner, cdepth=13620+1, cwidth=2480+1, cheight=2670+1)
+print(boxes_json)
+
+
+
+#test_load_box()
+#test_evaluate_space_feasibility()
+#test_find_best_position()
+test_tietoevry1_load_container()
+# end of the test functions
