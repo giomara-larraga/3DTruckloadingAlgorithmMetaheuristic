@@ -6,7 +6,6 @@ from genetic_algorithm import *
 from visualization import *
 import matplotlib.colors as mcolors
 from package import *
-
 class PartiallyLoadedContainer:
     def __init__(self, columns, rows, depth_coordinates, width_coordinates, container_depth=70, container_width=100, container_height=2600,):
         # Initialize the container's dimensions
@@ -175,6 +174,7 @@ class PartiallyLoadedContainer:
         plt.grid(True)
         plt.show()
 
+
 # Define a function that loads a single box into the container and updates the container's state and coordinates
 def load_box(container, row, column, depth, width, height):
     """Load a box into the container at a specific position with a specific depth and height."""
@@ -318,11 +318,3 @@ def find_best_position(container, depth, width, height):
                 best_column = j # Update the best position
     return best_row, best_column, best_score
 
-
-
-# write a test script that evaluates if a box shaped item can be placed at the integer corner (row, column) as its lower corner
-# and it is (1) well supported by the container floor or previously loaded boxes (even height level).
-# (2) it does not exceed the container height and (3) it does not exceed the container depth and width.
-# The function returns True if the box can be placed at the corner (row, column) and False otherwise.
-# The score reflects for a feasible place how well the box fits on previously loaded boxes. A blend of loading meters, and axle balance
-# Example usage:

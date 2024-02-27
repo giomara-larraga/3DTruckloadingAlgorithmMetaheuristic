@@ -1,3 +1,10 @@
+# write a test script that evaluates if a box shaped item can be placed at the integer corner (row, column) as its lower corner
+# and it is (1) well supported by the container floor or previously loaded boxes (even height level).
+# (2) it does not exceed the container height and (3) it does not exceed the container depth and width.
+# The function returns True if the box can be placed at the corner (row, column) and False otherwise.
+# The score reflects for a feasible place how well the box fits on previously loaded boxes. A blend of loading meters, and axle balance
+# Example usage:
+
 # Running
 from genetic_algorithm import *
 from visualization import *
@@ -30,8 +37,6 @@ def test_evaluate_space_feasibility():
     container.display_matplotlib()
     #wait for user input to continue
     input("Press Enter to continue...")
-
-
 
 def test_find_best_position():
     # Define a container
