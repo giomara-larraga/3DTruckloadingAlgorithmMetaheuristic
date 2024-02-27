@@ -294,8 +294,8 @@ def evaluate_space_feasibility(container, row, column, depth, width, height):
             return feasibility, score,  error_message
         # compute the score: loading meters to be held small, prefer the middle of the container.
         #score = width_of_column_after + 0.001 * abs((width_of_row_after - width_of_row)/2 - container.width)
-        score = width_of_column_after
-                 #+ 0.00001 * abs((width_of_row_after - width_of_row)/2 - container.width/2))
+        score = width_of_column_after + 0.00001 * (width_of_row_after)
+        #         + 0.00001 * abs((width_of_row_after - width_of_row)/2 - container.width/2))
         return feasibility, score, error_message
 
 
