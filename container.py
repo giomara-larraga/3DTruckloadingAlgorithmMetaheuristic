@@ -1,13 +1,25 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
+
+# import seaborn as sns
 from genetic_algorithm import *
 from visualization import *
 import matplotlib.colors as mcolors
 from package import *
+
+
 class PartiallyLoadedContainer:
-    def __init__(self, columns, rows, depth_coordinates, width_coordinates, container_depth=70, container_width=100, container_height=2600,):
+    def __init__(
+        self,
+        columns,
+        rows,
+        depth_coordinates,
+        width_coordinates,
+        container_depth=70,
+        container_width=100,
+        container_height=2600,
+    ):
         # Initialize the container's dimensions
         self.height = container_height
         self.depth = depth_coordinates[-1]
@@ -36,7 +48,6 @@ class PartiallyLoadedContainer:
         self.boxes_lower_corner = []
         self.boxes_upper_corner = []
 
-
     def get_height(self, row, column):
         """Get the height of the cargo at a specific cell."""
         return self.height_matrix[row][column]
@@ -57,8 +68,7 @@ class PartiallyLoadedContainer:
         self.width_coordinates.insert(position, real_width)
         # replicate all height values in the new row
         for i in range(len(self.depth_coordinates)):
-            self.height_matrix[position][i] = self.height_matrix[position-1][i]
-
+            self.height_matrix[position][i] = self.height_matrix[position - 1][i]
 
     def delete_width_coordinate(self, position):
         """Delete a width coordinate level (row) from the container."""
@@ -84,7 +94,7 @@ class PartiallyLoadedContainer:
         self.depth_coordinates.insert(position, width_of_column)
         # replicate all height values in the new column
         for i in range(len(self.width_coordinates)):
-            self.height_matrix[i][position] = self.height_matrix[i][position-1]
+            self.height_matrix[i][position] = self.height_matrix[i][position - 1]
 
     def delete_depth_coordinate(self, position):
         """Delete a depth coordinate level (column) from the container."""
@@ -102,7 +112,9 @@ class PartiallyLoadedContainer:
         """Display the container's current state, including heights."""
         for i in range(len(self.width_coordinates)):
             for j in range(len(self.depth_coordinates)):
-                print(f"({self.width_coordinates[i]}, {self.depth_coordinates[j]}): {self.height_matrix[i][j]}")
+                print(
+                    f"({self.width_coordinates[i]}, {self.depth_coordinates[j]}): {self.height_matrix[i][j]}"
+                )
 
     def display_matplotlib(self):
         """Display the container graphically using Matplotlib with grayscale heights and a legend."""
@@ -113,61 +125,88 @@ class PartiallyLoadedContainer:
         fig, ax = plt.subplots()
 
         # Define colormap for grayscale heights from white to black not using get_cmap
-        #cmap = plt.cm.get_cmap('gray', lut=256)
-        cmap = plt.colormaps['viridis']
-        max_color=self.height
+        # cmap = plt.cm.get_cmap('gray', lut=256)
+        cmap = plt.colormaps["viridis"]
+        max_color = self.height
 
         # Create a grid to represent the container with grayscale heights
-        for i in range(rows-1):
-            for j in range(columns-1):
+        for i in range(rows - 1):
+            for j in range(columns - 1):
                 height = self.height_matrix[i][j]
                 if height > 0:
-                    color = cmap(height / max_color)  # Scale heights to the [0, 1] range for grayscale
-                    ax.add_patch(plt.Rectangle((j, -i - 1), 1, 1, facecolor=color, edgecolor='black'))
+                    color = cmap(
+                        height / max_color
+                    )  # Scale heights to the [0, 1] range for grayscale
+                    ax.add_patch(
+                        plt.Rectangle(
+                            (j, -i - 1), 1, 1, facecolor=color, edgecolor="black"
+                        )
+                    )
 
         # Set axis: choose the limits and tic label  according to the depth and width coordinate values
         ax.set_xlim(0, columns)
         ax.set_ylim(-rows, 0)
-        ax.set_aspect('equal', adjustable='box')
+        ax.set_aspect("equal", adjustable="box")
 
         ax.set_xticks(range(columns))
         ax.set_xticklabels(self.depth_coordinates)
         ax.set_yticks(range(-rows, 0))
         # Flip array width_coordinates to display the width coordinates in the right orderand remove first element
-        invertedCoordinates=self.width_coordinates[::-1]
+        invertedCoordinates = self.width_coordinates[::-1]
         # plot yticks in the right order and to one level above
-        ax.set_yticks(range(-rows+1, 1))
+        ax.set_yticks(range(-rows + 1, 1))
         ax.set_yticklabels(invertedCoordinates)
 
         # move the yticks one step to the bottom
-        ax.tick_params(axis='y', which='major', pad=15)
+        ax.tick_params(axis="y", which="major", pad=15)
 
-        ax.set_aspect('equal', adjustable='box')
-        ax.set_xlabel('depth Coordinate')
-        ax.set_ylabel('width Coordinate')
+        ax.set_aspect("equal", adjustable="box")
+        ax.set_xlabel("depth Coordinate")
+        ax.set_ylabel("width Coordinate")
 
         # Create a legend for height levels
-        norm = mcolors.Normalize(vmin=0, vmax=max_color)  # Assuming heights are in the range [0, 100]
+        norm = mcolors.Normalize(
+            vmin=0, vmax=max_color
+        )  # Assuming heights are in the range [0, 100]
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])
-        plt.colorbar(sm, ax=ax, label='Height Level')
+        plt.colorbar(sm, ax=ax, label="Height Level")
         # add height levels in to the grid cells
-        for i in range(rows-1):
-            for j in range(columns-1):
+        for i in range(rows - 1):
+            for j in range(columns - 1):
                 height = self.height_matrix[i][j]
                 if height > 0:
                     # set textcolor to white if the height is less than 50
-                    if (height < 50  and height > 0):
-                        ax.text(j + 0.5, -i - 0.5, str(height), ha='center', va='center', color='white')
+                    if height < 50 and height > 0:
+                        ax.text(
+                            j + 0.5,
+                            -i - 0.5,
+                            str(height),
+                            ha="center",
+                            va="center",
+                            color="white",
+                        )
                     else:
-                        ax.text(j + 0.5, -i - 0.5, str(height), ha='center', va='center', color='black')
+                        ax.text(
+                            j + 0.5,
+                            -i - 0.5,
+                            str(height),
+                            ha="center",
+                            va="center",
+                            color="black",
+                        )
                 if height == 0:
                     # Make a string from coordinate pair i, j
 
                     # plot i,j in the cell coordinates
-                    ax.text(j + 0.5, -i - 0.5, str(i) + ',' + str(j), ha='center', va='center', color='black')
-
-
+                    ax.text(
+                        j + 0.5,
+                        -i - 0.5,
+                        str(i) + "," + str(j),
+                        ha="center",
+                        va="center",
+                        color="black",
+                    )
 
         # Show the plot
         plt.gca().invert_yaxis()  # Invert the y-axis to match grid coordinates
@@ -189,39 +228,46 @@ def load_box(container, row, column, depth, width, height):
     # compute the real height after the box is loaded
     real_height_after = real_height + height
     # check if the box fits in the container
-    if width_of_row_after > container.width_coordinates[-1] or width_of_column_after > container.depth_coordinates[-1]:
+    if (
+        width_of_row_after > container.width_coordinates[-1]
+        or width_of_column_after > container.depth_coordinates[-1]
+    ):
         # do not load the box if it does not fit
-        print('box does not fit')
+        print("box does not fit")
         return False
     else:
         # add box to the container and update coordinates and heights
         # First find the column and row where the upper real coordinate corner of the box is located
         # Find the column where the upper real coordinate corner of the box is located
         for i in range(len(container.depth_coordinates)):
-            if ((width_of_column_after >= container.depth_coordinates[i])
-                    and (width_of_column_after <= container.depth_coordinates[i+1])):
+            if (width_of_column_after >= container.depth_coordinates[i]) and (
+                width_of_column_after <= container.depth_coordinates[i + 1]
+            ):
                 new_column = i
                 break
         # Find in the same way the row where the upper real coordinate corner of the box is located
         for i in range(len(container.width_coordinates)):
-            if ((width_of_row_after >= container.width_coordinates[i])
-                    and (width_of_row_after <= container.width_coordinates[i+1])):
+            if (width_of_row_after >= container.width_coordinates[i]) and (
+                width_of_row_after <= container.width_coordinates[i + 1]
+            ):
                 new_row = i
                 break
         # Add a coordinate level (new_row) if necessary
-        if width_of_row_after < container.width_coordinates[new_row+1]:
+        if width_of_row_after < container.width_coordinates[new_row + 1]:
             container.add_width_coordinate(new_row + 1, width_of_row_after)
         # Add a coordinate level (new_column) if necessary
-        if width_of_column_after < container.depth_coordinates[new_column+1]:
-            container.add_depth_coordinate(new_column+1, width_of_column_after)
+        if width_of_column_after < container.depth_coordinates[new_column + 1]:
+            container.add_depth_coordinate(new_column + 1, width_of_column_after)
     # Update heights from in the box from row, colum to new_row and new_column
-    for i in range(row, new_row+1):
-        for j in range(column, new_column+1):
+    for i in range(row, new_row + 1):
+        for j in range(column, new_column + 1):
             container.set_height(i, j, real_height_after)
     # Add the real coordinate of the box to the list of lower corners
-    container.boxes_lower_corner.append((width_of_row, width_of_column,real_height))
+    container.boxes_lower_corner.append((width_of_row, width_of_column, real_height))
     # Add the real coordinate of the box to the list of upper corners
-    container.boxes_upper_corner.append((width_of_row_after, width_of_column_after,real_height_after))
+    container.boxes_upper_corner.append(
+        (width_of_row_after, width_of_column_after, real_height_after)
+    )
     # Add the index of the box to the list of boxes
     container.boxes_index.append(len(container.boxes_index))
     # Add the box to the list of boxes
@@ -230,14 +276,14 @@ def load_box(container, row, column, depth, width, height):
 
 
 def evaluate_space_feasibility(container, row, column, depth, width, height):
-# This function evaluates if a box shaped item can be placed at the integer corner (row, column) as its lower corner
-# and it is (1) well supported by the container floor or previously loaded boxes (even height level).
-# (2) it does not exceed the container height and (3) it does not exceed the container depth and width.
-# The function returns True if the box can be placed at the corner (row, column) and False otherwise.
-# The score reflects for a feasible place how well the box fits on previously loaded boxes.
-    score = 0.0;
+    # This function evaluates if a box shaped item can be placed at the integer corner (row, column) as its lower corner
+    # and it is (1) well supported by the container floor or previously loaded boxes (even height level).
+    # (2) it does not exceed the container height and (3) it does not exceed the container depth and width.
+    # The function returns True if the box can be placed at the corner (row, column) and False otherwise.
+    # The score reflects for a feasible place how well the box fits on previously loaded boxes.
+    score = 0.0
     feasibility = True
-    error_message = 'No Problems Encountered'
+    error_message = "No Problems Encountered"
     # Check the real coordinates of row and column, using the container's coordinates
     width_of_row = container.width_coordinates[row]
     width_of_column = container.depth_coordinates[column]
@@ -249,9 +295,12 @@ def evaluate_space_feasibility(container, row, column, depth, width, height):
     # compute the real height after the box is loaded
     real_height_after = real_height + height
     # check if the box fits in the container
-    if width_of_row_after > container.width_coordinates[-1] or width_of_column_after > container.depth_coordinates[-1]:
+    if (
+        width_of_row_after > container.width_coordinates[-1]
+        or width_of_column_after > container.depth_coordinates[-1]
+    ):
         feasibility = False
-        error_message = 'box does not fit'
+        error_message = "box does not fit"
         return feasibility, score, error_message
     else:
         height_lower_left_corner = container.get_height(row, column)
@@ -259,41 +308,43 @@ def evaluate_space_feasibility(container, row, column, depth, width, height):
         # compute the width in the integer grid coordinates, using the width coordinates and the width of the corner and the width of the corner after the box is loaded
         row_after = 0
         for i in range(len(container.width_coordinates)):
-            if ((width_of_row_after > container.width_coordinates[i])
-                    and (width_of_row_after <= container.width_coordinates[i+1])):
+            if (width_of_row_after > container.width_coordinates[i]) and (
+                width_of_row_after <= container.width_coordinates[i + 1]
+            ):
                 row_after = i
                 break
         # compute the depth in the integer grid coordinates, using the depth coordinates and the depth of the corner and the depth of the corner after the box is loaded
         column_after = 0
         for i in range(len(container.depth_coordinates)):
-            if ((width_of_column_after > container.depth_coordinates[i])
-                    and (width_of_column_after <= container.depth_coordinates[i+1])):
+            if (width_of_column_after > container.depth_coordinates[i]) and (
+                width_of_column_after <= container.depth_coordinates[i + 1]
+            ):
                 column_after = i
                 break
         # Go through all cells right below the box to be loaded and check if their height is the same
-        for i in range(row, row_after+1):
-            for j in range(column, column_after+1):
+        for i in range(row, row_after + 1):
+            for j in range(column, column_after + 1):
                 if container.get_height(i, j) != height_lower_left_corner:
                     feasibility = False
-                    error_message = 'box is not well supported by the container floor or previously loaded boxes (even height level)'
-                    return feasibility, score,  error_message
+                    error_message = "box is not well supported by the container floor or previously loaded boxes (even height level)"
+                    return feasibility, score, error_message
         # check if the box exceeds the container height
         if real_height_after > container.height:
             feasibility = False
-            error_message = 'box exceeds the container height'
+            error_message = "box exceeds the container height"
             return feasibility, score, error_message
         # check if the box exceeds the container depth
         if width_of_column_after > container.depth_coordinates[-1]:
             feasibility = False
-            error_message = 'box exceeds the container depth'
+            error_message = "box exceeds the container depth"
             return feasibility, score, error_message
         # check if the box exceeds the container width
         if width_of_row_after > container.width_coordinates[-1]:
             feasibility = False
-            error_message = 'box exceeds the container width'
-            return feasibility, score,  error_message
+            error_message = "box exceeds the container width"
+            return feasibility, score, error_message
         # compute the score: loading meters to be held small, prefer the middle of the container.
-        #score = width_of_column_after + 0.001 * abs((width_of_row_after - width_of_row)/2 - container.width)
+        # score = width_of_column_after + 0.001 * abs((width_of_row_after - width_of_row)/2 - container.width)
         score = width_of_column_after + 0.00001 * (width_of_row_after)
         #         + 0.00001 * abs((width_of_row_after - width_of_row)/2 - container.width/2))
         return feasibility, score, error_message
@@ -310,11 +361,12 @@ def find_best_position(container, depth, width, height):
     for i in range(len(container.width_coordinates)):
         for j in range(len(container.depth_coordinates)):
             # Evaluate the feasibility of the position
-            feasibility, score, error_message = evaluate_space_feasibility(container, i, j, depth, width, height)
+            feasibility, score, error_message = evaluate_space_feasibility(
+                container, i, j, depth, width, height
+            )
             # If the position is feasible and the score is better than the best score so far, update the best score and position
             if feasibility and score <= best_score:
                 best_score = score
                 best_row = i
-                best_column = j # Update the best position
+                best_column = j  # Update the best position
     return best_row, best_column, best_score
-
