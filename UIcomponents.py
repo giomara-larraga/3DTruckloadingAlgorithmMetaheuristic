@@ -10,7 +10,9 @@ SIDEBAR_STYLE = {
     "bottom": 0,
     "width": "24rem",
     "padding": "2rem 1rem",
-    "background-color": "#f8f9fa",
+    "background-color": "#002957",
+    "color": "white",
+    "box-shadow": "2px 0px 10px rgba(0, 0, 0, 0.5)",  # Adjust shadow color and size as needed
 }
 
 # the styles for the main content position it to the right of the sidebar and
@@ -23,7 +25,14 @@ CONTENT_STYLE = {
 
 sidebar = html.Div(
     [
-        html.H5("3D Truck Load", className="display-8"),
+        html.H5(
+            "3D Truck Loading Tool",
+            style={
+                "fontFamily": "Cambria, serif",
+                "fontWeight": "bold",
+                "fontSize": "1.5rem",
+            },
+        ),
         html.Hr(),
         html.P(
             "Please choose an Excel file containing the data for the container and the list of items. Next, specify the specific sheets within the file where this information can be found."
@@ -43,24 +52,25 @@ sidebar = html.Div(
             },
             multiple=False,
         ),
-        html.Div(id="file-name", style={"margin": "10px 0"}),
+        html.Div(id="file-name", style={"margin": "10px 0", "margin-bottom": "2rem"}),
         dbc.Row(
             [
                 dbc.Col(
                     [
                         html.P("Container: "),
                     ],
-                    width=2,
+                    width=3,
                 ),
                 dbc.Col(
                     [
                         dcc.Dropdown(
                             id="sheet-dropdown1",
                             placeholder="Select Page",
-                            className="form-control",
+                            style={"color": "black"},
+                            # className="form-control",
                         ),
                     ],
-                    width=10,
+                    width=9,
                 ),
             ],
             align="center",
@@ -72,17 +82,18 @@ sidebar = html.Div(
                     [
                         html.P("Items: "),
                     ],
-                    width=2,
+                    width=3,
                 ),
                 dbc.Col(
                     [
                         dcc.Dropdown(
                             id="sheet-dropdown2",
                             placeholder="Select Page",
-                            className="form-control",
+                            style={"color": "black"},
+                            # className="form-control",
                         ),
                     ],
-                    width=10,
+                    width=9,
                 ),
             ],
             align="center",
@@ -91,7 +102,13 @@ sidebar = html.Div(
         dcc.Store(id="options-store", data=[]),  # Store for options
         dcc.Store(id="container-store", data=[]),  # Store for container DataFrame
         dcc.Store(id="items-store", data=[]),  # Store for items DataFrame
-        dbc.Button("Compute", id="compute-button", color="primary", className="me-1"),
+        dbc.Button(
+            "Compute",
+            id="compute-button",
+            color="primary",
+            className="me-1",
+            style={"margin-top": "2rem"},
+        ),
     ],
     style=SIDEBAR_STYLE,
 )

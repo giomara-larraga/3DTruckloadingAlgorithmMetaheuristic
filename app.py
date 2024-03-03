@@ -20,7 +20,9 @@ CONTENT_STYLE = {
 }
 
 # Initialize the Dash app
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = dash.Dash(
+    __name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP]
+)
 
 # Define the layout of the app
 app.layout = html.Div(
@@ -123,7 +125,16 @@ def update_and_display_table(options, sheet_name1, sheet_name2, filename, conten
                     "The Container page must have the following columns: Item_ID, Length, Width, Height, Weight; "
                     "and the Items page must have the following columns: Item_ID, Quantity, Length, Width, Height, Weight, Type, Stackable."
                 )
-                return html.Div(error_message), "[]", "[]", is_valid_entry
+                return (
+                    dbc.Alert(
+                        [error_message],
+                        color="danger",
+                        className="d-flex align-items-center",
+                    ),
+                    "[]",
+                    "[]",
+                    is_valid_entry,
+                )
             return (
                 [table1, table2],
                 container.to_json(),
@@ -131,7 +142,7 @@ def update_and_display_table(options, sheet_name1, sheet_name2, filename, conten
                 is_valid_entry,
             )
         else:
-            return html.Div("Please select two pages."), "[]", "[]", False
+            return html.Div(""), "[]", "[]", False
     except Exception as e:
         return html.Div([f"Error: {str(e)}"]), "[]", "[]", False
 
@@ -146,18 +157,27 @@ def display_filename(filename):
 
 
 @app.callback(
-    Output("output-data-upload-results", "children"),
+    [
+        Output("output-data-upload-results", "children"),
+        Output("output-data-upload", "style"),
+    ],
     State("container-store", "data"),
     State("items-store", "data"),
     [Input("compute-button", "n_clicks"), Input("is-valid-entry", "data")],
 )
 def update_output(container, items, n_clicks, isValid):
-    if n_clicks is None or not (isValid):
-        return " "
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        raise PreventUpdate
+    elif ctx.triggered[0]["prop_id"].split(".")[0] == "compute-button":
+        if n_clicks is None or not (isValid):
+            return " ", {"display": "block"}
+        else:
+            # Perform computation or handle click event here
+            json_data = main_grouping(container, items)
+            return html.Pre(json_data), {"display": "none"}
     else:
-        # Perform computation or handle click event here
-        json_data = main_grouping(container, items)
-        return html.Pre(json_data)
+        return dash.no_update, {"display": "block"}  # Hide the div
 
 
 # Callback to process the uploaded file and display JSON

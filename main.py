@@ -77,7 +77,7 @@ def main_grouping(json_container, json_delivery):
         load_box(container, best_row, best_column, depth, width, height)
 
     # Display the container using Matplotlib with grayscale heights and a legend
-    container.display_matplotlib()
+    # container.display_matplotlib()
 
     # Output the lower and upper corners and the index of the boxes loaded in the container
     # print('Boxes loaded in the container:')
@@ -97,7 +97,7 @@ def main_grouping(json_container, json_delivery):
         cwidth=container_width + 1,
         cheight=container_height + 1,
     )
-    print(boxes_json)
+    # print(boxes_json)
 
     # test_draw_box()
     """     
@@ -194,7 +194,7 @@ def main():
     )
     # print(boxes_json)
 
-    # test_draw_box()
+    test_draw_box()
     """     
         visualize3Dboxes(
         container.boxes_lower_corner,
