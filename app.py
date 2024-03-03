@@ -11,7 +11,7 @@ from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output
 from random import randint
 from UIcomponents import sidebar, content
-from main import main
+from main import main_grouping
 
 CONTENT_STYLE = {
     "margin-left": "10rem",
@@ -156,7 +156,7 @@ def update_output(container, items, n_clicks, isValid):
         return " "
     else:
         # Perform computation or handle click event here
-        json_data = main(container, items)
+        json_data = main_grouping(container, items)
         return html.Pre(json_data)
 
 

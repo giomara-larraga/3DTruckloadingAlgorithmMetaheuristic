@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # import seaborn as sns
-from genetic_algorithm import *
+from genetic_algorithm_grouping import *
 from visualization import *
 import matplotlib.colors as mcolors
 from package import *
