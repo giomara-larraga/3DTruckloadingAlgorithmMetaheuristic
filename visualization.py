@@ -8,44 +8,100 @@ import plotly
 
 # print in the json format (see example above) a list of boxes, index, size of boxes, lower corners in container (with height)
 # to json format; assign random colors to the boxes according to colors list (default is 'red')
-def print_json_for_list_of_boxes(boxes_indexes, colors, boxes_sizes, boxes_lower_corners,cdepth=8000, cwidth=3400, cheight=2800):
-# print in the json format (see example above) a list of boxes, index, size of boxes, lower corners in container (with height)
-# to json format; assign random colors to the boxes according to colors list (default is 'red')
-# transform cdepth, clength, cwidth to strings
+def print_json_for_list_of_boxes(
+    boxes_indexes,
+    colors,
+    boxes_sizes,
+    boxes_lower_corners,
+    cdepth=8000,
+    cwidth=3400,
+    cheight=2800,
+):
+    # print in the json format (see example above) a list of boxes, index, size of boxes, lower corners in container (with height)
+    # to json format; assign random colors to the boxes according to colors list (default is 'red')
+    # transform cdepth, clength, cwidth to strings
 
     print('{ "container": {')
     print('"size": {')
-    print('"width":' + str(cwidth) + ',')
-    print('"height":' + str(cheight) + ',')
+    print('"width":' + str(cwidth) + ",")
+    print('"height":' + str(cheight) + ",")
     print('"depth":' + str(cdepth))
-    print('},')
+    print("},")
     print('"items": [')
     for i in range(len(boxes_indexes)):
-        print('{', end=" ")
-        print('"id": "BOX', boxes_indexes[i], '",',  end=" ")
+        print("{", end=" ")
+        print('"id": "BOX', boxes_indexes[i], '",', end=" ")
         print('"type": "box",', end=" ")
         # Make a string from the color assignment to avoid spaces around the color name; no line breaks
         color_print = '"color": "' + colors[i].strip() + '",'
         print(color_print, end=" ")
         print('"size": {', end=" ")
-        print('"width": ', boxes_sizes[i][1], ',', end=" ")
-        print('"height": ', boxes_sizes[i][2], ',', end=" ")
+        print('"width": ', boxes_sizes[i][1], ",", end=" ")
+        print('"height": ', boxes_sizes[i][2], ",", end=" ")
         print('"depth": ', boxes_sizes[i][0], end=" ")
-        print('},', end=" ")
+        print("},", end=" ")
         print('"position": {', end=" ")
-        print('"x": ', boxes_lower_corners[i][0], ',', end=" ")
-        print('"y": ', boxes_lower_corners[i][2], ',', end=" ")
+        print('"x": ', boxes_lower_corners[i][0], ",", end=" ")
+        print('"y": ', boxes_lower_corners[i][2], ",", end=" ")
         print('"z": ', boxes_lower_corners[i][1], end=" ")
-        print('}', end=" ")
-        if (i < len(boxes_indexes)-1):
-            print('},')
+        print("}", end=" ")
+        if i < len(boxes_indexes) - 1:
+            print("},")
         else:
-            print('}')
-    print(']', end=" ")
-    print('}'+ '}')
+            print("}")
+    print("]", end=" ")
+    print("}" + "}")
 
-def visualize3Dboxes(boxes_lower_corners, boxes_sizes,
-                     container_width, container_depth, container_height, colors=None):
+
+def get_json_for_list_of_boxes(
+    boxes_indexes,
+    colors,
+    boxes_sizes,
+    boxes_lower_corners,
+    cdepth=8000,
+    cwidth=3400,
+    cheight=2800,
+):
+    result_json = {
+        "container": {
+            "size": {
+                "width": int(cwidth),
+                "height": int(cheight),
+                "depth": int(cdepth),
+            },
+            "items": [],
+        }
+    }
+
+    for i in range(len(boxes_indexes)):
+        item = {
+            "id": "BOX" + str(int(boxes_indexes[i])),
+            "type": "box",
+            "color": colors[i].strip(),
+            "size": {
+                "width": int(boxes_sizes[i][1]),
+                "height": int(boxes_sizes[i][2]),
+                "depth": int(boxes_sizes[i][0]),
+            },
+            "position": {
+                "x": int(boxes_lower_corners[i][0]),
+                "y": int(boxes_lower_corners[i][2]),
+                "z": int(boxes_lower_corners[i][1]),
+            },
+        }
+        result_json["container"]["items"].append(item)
+
+    return json.dumps(result_json, indent=4)
+
+
+def visualize3Dboxes(
+    boxes_lower_corners,
+    boxes_sizes,
+    container_width,
+    container_depth,
+    container_height,
+    colors=None,
+):
     # # Define the size of the boxes
     # dx, dy, dz = 1, 1, 1
     #
@@ -67,12 +123,26 @@ def visualize3Dboxes(boxes_lower_corners, boxes_sizes,
     all_boxes = []
     if colors is None:
         for i in range(len(boxes_lower_corners)):
-            all_boxes = all_boxes + draw_box(boxes_lower_corners[i][1], boxes_lower_corners[i][0], boxes_lower_corners[i][2],
-                                boxes_sizes[i][0], boxes_sizes[i][1], boxes_sizes[i][2], colors[i % len(colors)])
+            all_boxes = all_boxes + draw_box(
+                boxes_lower_corners[i][1],
+                boxes_lower_corners[i][0],
+                boxes_lower_corners[i][2],
+                boxes_sizes[i][0],
+                boxes_sizes[i][1],
+                boxes_sizes[i][2],
+                colors[i % len(colors)],
+            )
     else:
         for i in range(len(boxes_lower_corners)):
-            all_boxes = all_boxes + draw_box(boxes_lower_corners[i][1], boxes_lower_corners[i][0], boxes_lower_corners[i][2],
-                                boxes_sizes[i][0], boxes_sizes[i][1], boxes_sizes[i][2], colors[i % len(colors)])
+            all_boxes = all_boxes + draw_box(
+                boxes_lower_corners[i][1],
+                boxes_lower_corners[i][0],
+                boxes_lower_corners[i][2],
+                boxes_sizes[i][0],
+                boxes_sizes[i][1],
+                boxes_sizes[i][2],
+                colors[i % len(colors)],
+            )
 
     # Create a figure and add the boxes
     fig = go.Figure(data=all_boxes)
@@ -80,15 +150,14 @@ def visualize3Dboxes(boxes_lower_corners, boxes_sizes,
     # Set the layout for the 3D plot
     fig.update_layout(
         scene=dict(
-            xaxis=dict(title='width',range=[-1, container_depth]),
-            yaxis=dict(title='depth',range=[-1, container_width]),
-            zaxis=dict(title='height',range=[-1, container_height]),
+            xaxis=dict(title="width", range=[-1, container_depth]),
+            yaxis=dict(title="depth", range=[-1, container_width]),
+            zaxis=dict(title="height", range=[-1, container_height]),
         ),
-        margin=dict(l=10, r=10, b=10, t=10)
+        margin=dict(l=10, r=10, b=10, t=10),
     )
     # Show the plot
     fig.show()
-
 
     #
     #
@@ -117,4 +186,3 @@ def visualize3Dboxes(boxes_lower_corners, boxes_sizes,
     #
     # # Show the plot
     # fig.show()
-

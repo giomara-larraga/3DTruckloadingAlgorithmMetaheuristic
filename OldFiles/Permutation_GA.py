@@ -1,6 +1,7 @@
 import numpy as np
-
-
+CONTAINER_WIDTH = 10
+CONTAINER_HEIGHT = 10
+CONTAINER_DEPTH = 10
 # Define a data structure for each package
 class Package:
     def __init__(self, width, height, depth, non_stackable):
@@ -12,39 +13,15 @@ class Package:
         self.y = 0  # Initialize y position
         self.z = 0  # Initialize z position
 
-
-# Genetic Algorithm Parameters
-POPULATION_SIZE = 50
-NUM_GENERATIONS = 100
-MUTATION_RATE = 0.2
-
-# Problem-specific parameters
-CONTAINER_WIDTH = 10
-CONTAINER_HEIGHT = 10
-CONTAINER_DEPTH = 10
-
-# Create a list of packages (for example)
-packages = [
-    Package(2, 3, 1, False),
-    Package(4, 2, 1, True),
-    Package(3, 3, 1, False),
-    Package(1, 4, 1, False),
-    Package(5, 2, 1, True),
-    # Add more packages as needed
-]
-
-
 # Initialize population with random permutations
 def initialize_population(population_size, num_packages):
     return np.array(
         [np.random.permutation(num_packages) for _ in range(population_size)]
     )
 
-
 # Calculate fitness of each chromosome
 def calculate_fitness(population, packages):
     fitness_scores = []
-
     for chromosome in population:
         # Reset package positions
         for package in packages:
@@ -118,14 +95,19 @@ def mutate(chromosome):
     chromosome[idx1], chromosome[idx2] = chromosome[idx2], chromosome[idx1]
     return chromosome
 
-
 # Genetic Algorithm
-def genetic_algorithm(packages, population_size, num_generations, mutation_rate):
+def genetic_algorithm(packages, population_size, num_generations, mutation_rate, loading_method,fitness_function_3d,
+                      cheight = 2670,cdepth = 13620, cwidth = 2480):
     num_packages = len(packages)
     population = initialize_population(population_size, num_packages)
 
     for generation in range(num_generations):
-        fitness_scores = calculate_fitness(population, packages)
+        fitness_scores = []
+        if (loading_method == '2D'):
+            fitness_scores = calculate_fitness(population, packages, cheight, cdepth, cwidth)
+        elif (loading_method == '3D'):
+            # set dimensions  of the container
+            fitness_scores = fitness_function_3d(population, packages, cheight, cdepth, cwidth)
 
         # Select parents for reproduction using roulette wheel selection
         probabilities = fitness_scores / np.sum(fitness_scores)
@@ -153,18 +135,16 @@ def genetic_algorithm(packages, population_size, num_generations, mutation_rate)
         population = np.array(new_population)
 
     # Find the best solution from the final generation
-    fitness_scores = calculate_fitness(population, packages)
+    fitness_scores = []
+    if (loading_method == '2D'):
+        fitness_scores = calculate_fitness(population, packages, cheight, cdepth, cwidth)
+    elif (loading_method == '3D'):
+        # set dimensions  of the container
+        fitness_scores = fitness_function_3d(population, packages, cheight, cdepth, cwidth)
     best_solution_idx = np.argmax(fitness_scores)
     best_chromosome = population[best_solution_idx]
+
+
     best_fitness = fitness_scores[best_solution_idx]
 
     return best_chromosome, best_fitness
-
-
-# Run the genetic algorithm
-best_chromosome, best_fitness = genetic_algorithm(
-    packages, POPULATION_SIZE, NUM_GENERATIONS, MUTATION_RATE
-)
-
-# Print the best loading order
-print("Best Loading Order:", best_chromosome, "Fitness:", best_fitness)

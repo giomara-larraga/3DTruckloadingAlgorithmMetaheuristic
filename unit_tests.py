@@ -6,7 +6,7 @@
 # Example usage:
 
 # Running
-from genetic_algorithm import *
+from genetic_algorithm_grouping import *
 from visualization import *
 from container import *
 from package import *
