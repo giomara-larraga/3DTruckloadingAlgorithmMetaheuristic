@@ -24,6 +24,7 @@ app = dash.Dash(
     __name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP]
 )
 
+server = app.server
 # Define the layout of the app
 app.layout = html.Div(
     [
@@ -198,4 +199,4 @@ def update_output(container, items, n_clicks, isValid):
 
 # Run the app
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(host="0.0.0.0", debug=False)
