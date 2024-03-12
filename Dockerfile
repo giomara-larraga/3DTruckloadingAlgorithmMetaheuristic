@@ -11,7 +11,7 @@ COPY . ./
 EXPOSE 8050
 
 #Running your APP and doing some PORT Forwarding
-CMD ["gunicorn", "-b", "0.0.0.0:8050", "app:server"]
+CMD ["python", "app.py"]
 
 
 
