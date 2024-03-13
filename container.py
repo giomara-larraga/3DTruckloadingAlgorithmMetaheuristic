@@ -1,13 +1,7 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
-# import seaborn as sns
 from genetic_algorithm_grouping import *
-from visualization import *
-import matplotlib.colors as mcolors
 from package import *
-
 
 class PartiallyLoadedContainer:
     def __init__(
@@ -115,103 +109,6 @@ class PartiallyLoadedContainer:
                 print(
                     f"({self.width_coordinates[i]}, {self.depth_coordinates[j]}): {self.height_matrix[i][j]}"
                 )
-
-    def display_matplotlib(self):
-        """Display the container graphically using Matplotlib with grayscale heights and a legend."""
-        rows = len(self.width_coordinates)
-        columns = len(self.depth_coordinates)
-
-        # Create a figure and axis for the plot
-        fig, ax = plt.subplots()
-
-        # Define colormap for grayscale heights from white to black not using get_cmap
-        # cmap = plt.cm.get_cmap('gray', lut=256)
-        cmap = plt.colormaps["viridis"]
-        max_color = self.height
-
-        # Create a grid to represent the container with grayscale heights
-        for i in range(rows - 1):
-            for j in range(columns - 1):
-                height = self.height_matrix[i][j]
-                if height > 0:
-                    color = cmap(
-                        height / max_color
-                    )  # Scale heights to the [0, 1] range for grayscale
-                    ax.add_patch(
-                        plt.Rectangle(
-                            (j, -i - 1), 1, 1, facecolor=color, edgecolor="black"
-                        )
-                    )
-
-        # Set axis: choose the limits and tic label  according to the depth and width coordinate values
-        ax.set_xlim(0, columns)
-        ax.set_ylim(-rows, 0)
-        ax.set_aspect("equal", adjustable="box")
-
-        ax.set_xticks(range(columns))
-        ax.set_xticklabels(self.depth_coordinates)
-        ax.set_yticks(range(-rows, 0))
-        # Flip array width_coordinates to display the width coordinates in the right orderand remove first element
-        invertedCoordinates = self.width_coordinates[::-1]
-        # plot yticks in the right order and to one level above
-        ax.set_yticks(range(-rows + 1, 1))
-        ax.set_yticklabels(invertedCoordinates)
-
-        # move the yticks one step to the bottom
-        ax.tick_params(axis="y", which="major", pad=15)
-
-        ax.set_aspect("equal", adjustable="box")
-        ax.set_xlabel("depth Coordinate")
-        ax.set_ylabel("width Coordinate")
-
-        # Create a legend for height levels
-        norm = mcolors.Normalize(
-            vmin=0, vmax=max_color
-        )  # Assuming heights are in the range [0, 100]
-        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-        sm.set_array([])
-        plt.colorbar(sm, ax=ax, label="Height Level")
-        # add height levels in to the grid cells
-        for i in range(rows - 1):
-            for j in range(columns - 1):
-                height = self.height_matrix[i][j]
-                if height > 0:
-                    # set textcolor to white if the height is less than 50
-                    if height < 50 and height > 0:
-                        ax.text(
-                            j + 0.5,
-                            -i - 0.5,
-                            str(height),
-                            ha="center",
-                            va="center",
-                            color="white",
-                        )
-                    else:
-                        ax.text(
-                            j + 0.5,
-                            -i - 0.5,
-                            str(height),
-                            ha="center",
-                            va="center",
-                            color="black",
-                        )
-                if height == 0:
-                    # Make a string from coordinate pair i, j
-
-                    # plot i,j in the cell coordinates
-                    ax.text(
-                        j + 0.5,
-                        -i - 0.5,
-                        str(i) + "," + str(j),
-                        ha="center",
-                        va="center",
-                        color="black",
-                    )
-
-        # Show the plot
-        plt.gca().invert_yaxis()  # Invert the y-axis to match grid coordinates
-        plt.grid(True)
-        plt.show()
 
 
 # Define a function that loads a single box into the container and updates the container's state and coordinates

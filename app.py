@@ -11,7 +11,7 @@ from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output
 from random import randint
 from UIcomponents import sidebar, content
-from main import main_grouping
+from container_loading_metaheuristic import container_loading
 
 CONTENT_STYLE = {
     "margin-left": "10rem",
@@ -175,27 +175,10 @@ def update_output(container, items, n_clicks, isValid):
             return " ", {"display": "block"}
         else:
             # Perform computation or handle click event here
-            json_data = main_grouping(container, items)
-            return html.Pre(json_data), {"display": "none"}
+            json_data = container_loading(container, items)
+            return html.Pre(json_data, style={"display": "inline-block", "wordWrap": "break-word","overflowWrap": "break-word","text-wrap":"pretty","maxWidth": "100%"}), {"display": "none"}
     else:
-        return dash.no_update, {"display": "block"}  # Hide the div
-
-
-# Callback to process the uploaded file and display JSON
-# @app.callback(
-#    Output("output-data-upload-results", "children"),
-#    State("container-store", "data"),
-#    State("items-store", "data"),
-#    [Input("is-valid-entry", "data")],
-# )
-# def update_output(container, items, isValid):
-#    if isValid:
-#        json_data = compute_with_stacking(container, items)
-#        return json.dumps(json_data, indent=4)
-#    else:
-#        return ""
-#        raise PreventUpdate
-
+        return dash.no_update, {"display": "block" }  # Hide the div
 
 # Run the app
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 import numpy as np
 import random
-from visualization import *
 from container import PartiallyLoadedContainer, find_best_position, load_box
 from package import *
 
@@ -77,11 +76,11 @@ def calculate_fitness_3DContainerLoader(population, packages, cheight, cdepth, c
     return np.array(fitness_scores)
 
 
-def crossover(parent1, parent2):
+def crossover(parent1, parent2, crossover_rate):
     child1 = {}
     child2 = {}
     for group_id in parent1.keys():
-        if random.random() < 0.5:
+        if random.random() < crossover_rate:
             child1[group_id] = parent1[group_id]
             child2[group_id] = parent2[group_id]
         else:
@@ -91,10 +90,10 @@ def crossover(parent1, parent2):
 
 
 # Perform mutation (swap two random elements)
-def mutate(solution):
+def mutate(solution, mutation_rate):
     mutated_solution = solution.copy()
     for group_id, group_packages in mutated_solution.items():
-        if random.random() < 0.1:  # Mutation probability
+        if random.random() < mutation_rate:  # Mutation probability
             random.shuffle(group_packages)
             mutated_solution[group_id] = group_packages
     return mutated_solution
@@ -106,16 +105,11 @@ def genetic_algorithm(
     population_size,
     num_generations,
     mutation_rate,
-    loading_method,
     cheight=2670,
     cdepth=13620,
     cwidth=2480,
 ):
     num_packages = len(packages)
-    # num_groups = len(packages)
-    # for i in range(num_groups):
-    #    num_packages += len(packages[i])
-
     population = initialize_population(population_size, packages)
 
     for generation in range(num_generations):
@@ -132,7 +126,6 @@ def genetic_algorithm(
             range(population_size), size=population_size, p=probabilities
         )
 
-        # parents = population[parent_indices]
         parents = [population[index] for index in parent_indices]
 
         # Create new generation
@@ -142,14 +135,10 @@ def genetic_algorithm(
             parent1, parent2 = parents[i], parents[i + 1]
 
             # Perform crossover
-            child1, child2 = crossover(parent1, parent2)
-            # print(child1)
-            # print(child2)
+            child1, child2 = crossover(parent1, parent2, 0.5)
             # Perform mutation
-            # if np.random.rand() < mutation_rate:
-            child1 = mutate(child1)
-            # if np.random.rand() < mutation_rate:
-            child2 = mutate(child2)
+            child1 = mutate(child1, mutation_rate)
+            child2 = mutate(child2, mutation_rate)
 
             new_population.extend([child1, child2])
 

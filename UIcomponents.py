@@ -122,7 +122,7 @@ content = html.Div(
             type="default",
             children=html.Div(
                 id="output-data-upload-results",
-                style={"backgroundColor": "lightgray", "padding": "10px"},
+                style={"backgroundColor": "lightgray", "padding": "10px", "display":"inline-block","overflowWrap": "break-word", "wordWrap": "break-word", "text-wrap":"balance",  "maxWidth": "100%",  },
             ),
         ),
         # html.Div(id='output-data-upload-results', style={'backgroundColor': 'lightgray', 'padding': '10px'}),
